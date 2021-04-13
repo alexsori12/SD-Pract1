@@ -5,7 +5,7 @@ from redis import Redis
 import json
 
 
-server = SimpleXMLRPCServer(('localhost', 9000))
+server = SimpleXMLRPCServer(('localhost', 9000), allow_none=True)
 server.register_introspection_functions()
 
 
@@ -14,18 +14,23 @@ WORKER_ID=0
 
 redisS = Redis()
 
+
+def start_worker(id):  
+    print("HOLAAAAAAAAA SOC WORKER")
+    task = redisS.blpop(["op",0])
+    print(id)
+    print(task)
+
+
 def create_worker():
     global WORKERS
     global WORKER_ID
-    print("worker creat1")
-
-    proc = Process(target=worker.start_worker(), args=(WORKER_ID,))
+    
+    proc = Process(target=start_worker, args=(WORKER_ID,))
     proc.start()
-    print("worker creat2")
 
     WORKERS[WORKER_ID] = proc
     WORKER_ID += 1
-    print("worker creat3")
 
 def delete_worker(id):
     global WORKERS
