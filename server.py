@@ -1,13 +1,16 @@
 from xmlrpc.server import SimpleXMLRPCServer
 from multiprocessing import Process
 from redis import Redis
-import worker
+from Worker import *
 
 server = SimpleXMLRPCServer(('localhost', 9000))
 server.register_introspection_functions()
 
 WORKERS={}
 WORKER_ID=0
+
+redis = Redis()
+
 def create_worker():
     global WORKERS
     global WORKER_ID
@@ -35,14 +38,12 @@ def list_workers():
 
 def todo(param):
     # Encuarem a la cua de redis el metode
+    return 0
 
 
 server.register_function(create_worker, 'crearW')
 server.register_function(delete_worker, 'borrarW')
-server.register_function(start_worker, 'IniciarW')
-server.register_function(metodo_cualquiera, 'todo')
-
-
+server.register_function(todo, 'todo')
 
 try:
     print('Use Control-C to exit')
