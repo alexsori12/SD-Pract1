@@ -1,29 +1,35 @@
 from xmlrpc.server import SimpleXMLRPCServer
 from multiprocessing import Process
+import worker
 from redis import Redis
-from Worker import *
+import json
+
 
 server = SimpleXMLRPCServer(('localhost', 9000))
 server.register_introspection_functions()
 
+
 WORKERS={}
 WORKER_ID=0
 
-redis = Redis()
+redisS = Redis()
 
 def create_worker():
     global WORKERS
     global WORKER_ID
+    print("worker creat1")
 
-    proc = Process(target=worker.start_worker, args=(WORKER_ID,))
+    proc = Process(target=worker.start_worker(), args=(WORKER_ID,))
     proc.start()
+    print("worker creat2")
 
     WORKERS[WORKER_ID] = proc
     WORKER_ID += 1
+    print("worker creat3")
 
 def delete_worker(id):
     global WORKERS
-    Process = WORKERS[id].terminate()
+    WORKERS[id].terminate()
     del WORKERS[id]
     print("Worker Borrado")
 
@@ -36,14 +42,23 @@ def list_workers():
     return WORKERS
     
 
-def todo(param):
-    # Encuarem a la cua de redis el metode
-    return 0
+def do_tasks(func, param):
+    print("Tasca pujada")
+    dades = {
+        "operacio": func,
+        "parametre": param,
+    }
+    
+    redisS.rpush("op", json.dumps(dades))
+    print("Completat")
+   
 
+server.register_function(create_worker, 'crear')
+server.register_function(delete_worker, 'borrar')
+server.register_function(numberOfWorkers, 'numero')
+server.register_function(list_workers, 'lista')
+server.register_function(do_tasks, 'tasca')
 
-server.register_function(create_worker, 'crearW')
-server.register_function(delete_worker, 'borrarW')
-server.register_function(todo, 'todo')
 
 try:
     print('Use Control-C to exit')
