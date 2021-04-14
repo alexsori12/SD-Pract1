@@ -35,7 +35,7 @@ def numberOfWorkers():
     global WORKERS
     return len(WORKERS)
 
-def list_workers():
+def list_workers(): # Falta arreglar
     global WORKERS
     print(type(WORKERS))
     return "hola"
@@ -62,11 +62,7 @@ def do_tasks(func, params):
     redisS.set(str(request_id),"0")
     redisS.rpush("op", json.dumps(dades))
    
-    print("adpegooooooooo")
-    result= redisS.blpop("ap 0")[0]
-
-    print("RESULTADO")
-    print(str(result[1]))
+    result= redisS.blpop('ap', timeout=0)
     return result[1]
 
 

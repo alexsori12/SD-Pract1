@@ -3,9 +3,10 @@ import json
 def start_worker(id, redisS):
     #FALTA UN DO WHILE INFINITO  
     while True:
-        print("     HOLAAAAAAAAA SOC WORKER")
-        task= redisS.blpop(["op",0])
-        print("     Tasca agafadas")
+        #print("     HOLAAAAAAAAA SOC WORKER")
+        task= redisS.blpop('op', timeout=0)
+
+        #print("     Tasca agafadas")
         tasca  = json.loads(task[1])
         request_id = tasca["request_id"]
         
@@ -15,9 +16,9 @@ def start_worker(id, redisS):
             
         if tasca["end"] == "True":
             print("     END TRUE")
-            redisS.rpush("ap","3")
+            redisS.rpush("ap",str(int(antic)+1))
         
-        print("     Adeeeeeeeeeeeeeeeeeeeeeeeeeeu")
+        #print("     Adeeeeeeeeeeeeeeeeeeeeeeeeeeu")
         
 
 
