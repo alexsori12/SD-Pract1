@@ -11,7 +11,7 @@ server.register_introspection_functions()
 
 WORKERS={}
 WORKER_ID=0
-
+REQUEST_ID=0
 redisS = Redis()
 
 def create_worker():
@@ -41,14 +41,33 @@ def list_workers():
     return "hola"
     
 
-def do_tasks(func, param):
-    print("Tasca pujada")
-    print(param)
+def do_tasks(func, params):
+    global REQUEST_ID
+    request_id = REQUEST_ID
+    REQUEST_ID+=1
+    
     dades = {
         "operacio": func,
-        "parametros": param,
+        "parametros": 'X',
+        "request_id": request_id,
+        'end': "False",
     }
+    
+    for i in range(0,len(params)-1):
+        dades['parametros'] = params[i]
+        redisS.rpush("op", json.dumps(dades))
+
+    dades['parametros'] = params[len(params)-1]
+    dades['end'] = "True"
+    redisS.set(str(request_id),"0")
     redisS.rpush("op", json.dumps(dades))
+   
+    print("adpegooooooooo")
+    result= redisS.blpop("ap 0")[0]
+
+    print("RESULTADO")
+    print(str(result[1]))
+    return result[1]
 
 
 server.register_function(create_worker, 'crear')

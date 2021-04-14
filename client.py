@@ -27,8 +27,8 @@ def delete(id):
 @click.command()
 @click.argument('urls', nargs=-1)
 def tasca1(urls):
-    server.tasca('op1',urls)
-
+    click.echo("Resultat Suma "+ str(server.tasca('suma',urls))) 
+    
 @click.command()
 @click.argument('urls', nargs=-1)
 def tasca2(urls):
