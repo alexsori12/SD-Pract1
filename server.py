@@ -23,7 +23,7 @@ def create_worker():
     proc.start()
 
     WORKERS[WORKER_ID] = proc
-    print(str(proc))
+    # print(str(proc))
     WORKER_ID += 1
 
 def delete_worker(id):
@@ -46,7 +46,6 @@ def do_tasks(func, params):
     global REQUEST_ID
     request_id = REQUEST_ID
     REQUEST_ID+=1
-    n_sem = 1
 
     dades = {
         "operacio": func,
@@ -54,8 +53,8 @@ def do_tasks(func, params):
         "request_id": request_id,
         'end': "False",
     }
+    
     redisS.set(str(request_id),'0')
-
     semafor =str(request_id) + 'semafor'
     redisS.rpush(semafor, '1' )
 
