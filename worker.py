@@ -10,13 +10,22 @@ def start_worker(id, redisS):
         tasca  = json.loads(task[1])
         request_id = tasca["request_id"]
         
+        semafor =str(request_id) + 'semafor'
+        redisS.blpop(semafor, timeout=0)
+
         antic = redisS.get(request_id)
-        redisS.set(request_id,str(int(antic)+1))
+        print('Valor antic:', antic)
+        nou = int(antic) + 1
+        print('Valor nou:', nou)
+        redisS.set(request_id,str(nou))
+        
+        redisS.rpush(semafor,'1')
 
             
         if tasca["end"] == "True":
             print("     END TRUE")
-            redisS.rpush("ap",str(int(antic)+1))
+            cua =str(request_id) + 'resposta'
+            redisS.rpush(cua,str(int(antic)+1))
         
         #print("     Adeeeeeeeeeeeeeeeeeeeeeeeeeeu")
         

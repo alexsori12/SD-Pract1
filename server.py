@@ -1,6 +1,7 @@
 from xmlrpc.server import SimpleXMLRPCServer
 from multiprocessing import Process
 import worker as wk
+import threading
 from redis import Redis
 import json
 
@@ -45,25 +46,32 @@ def do_tasks(func, params):
     global REQUEST_ID
     request_id = REQUEST_ID
     REQUEST_ID+=1
-    
+    n_sem = 1
+
     dades = {
         "operacio": func,
         "parametros": 'X',
         "request_id": request_id,
         'end': "False",
     }
+    redisS.set(str(request_id),'0')
     
+    semafor =str(request_id) + 'semafor'
+    redisS.rpush(semafor, '1' )
+
     for i in range(0,len(params)-1):
         dades['parametros'] = params[i]
         redisS.rpush("op", json.dumps(dades))
 
     dades['parametros'] = params[len(params)-1]
     dades['end'] = "True"
-    redisS.set(str(request_id),"0")
     redisS.rpush("op", json.dumps(dades))
-   
-    result= redisS.blpop('ap', timeout=0)
-    return result[1]
+
+    cua =str(request_id) + 'resposta'
+    print("ABANS-------------------------------------------------------------")
+    result= (redisS.blpop(cua, timeout=0))
+    print("ERROR AQUI O ABANS-------------------------------------------------")
+    return int(result[1])
 
 
 server.register_function(create_worker, 'crear')
