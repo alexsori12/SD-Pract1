@@ -19,13 +19,13 @@ def start_worker(id, redisS):
         print('Valor nou:', nou)
         redisS.set(request_id,str(nou))
         
-        redisS.rpush(semafor,'1')
-
-            
+        
         if tasca["end"] == "True":
             print("     END TRUE")
             cua =str(request_id) + 'resposta'
             redisS.rpush(cua,str(int(antic)+1))
+        else:
+            redisS.rpush(semafor,'1')
         
         #print("     Adeeeeeeeeeeeeeeeeeeeeeeeeeeu")
         

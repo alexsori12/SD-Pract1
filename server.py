@@ -55,7 +55,7 @@ def do_tasks(func, params):
         'end': "False",
     }
     redisS.set(str(request_id),'0')
-    
+
     semafor =str(request_id) + 'semafor'
     redisS.rpush(semafor, '1' )
 
@@ -68,9 +68,8 @@ def do_tasks(func, params):
     redisS.rpush("op", json.dumps(dades))
 
     cua =str(request_id) + 'resposta'
-    print("ABANS-------------------------------------------------------------")
     result= (redisS.blpop(cua, timeout=0))
-    print("ERROR AQUI O ABANS-------------------------------------------------")
+    redisS.delete(str(request_id))
     return int(result[1])
 
 
