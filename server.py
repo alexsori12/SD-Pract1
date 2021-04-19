@@ -16,6 +16,7 @@ REQUEST_ID=0
 
 redisS = Redis()
 
+
 def create_worker():
     global WORKERS
     global WORKER_ID
@@ -53,28 +54,26 @@ def do_tasks(func, params):
     request_id = REQUEST_ID
     REQUEST_ID += 1
 
+    
     dades = {
         "operacio": func,
         "parametros": 'X',
         "request_id": request_id,
-        'end': "False",
+        "numero_param": len(params),
+        "word_merge": "False"
     }
 
-    semafor = str(request_id) + 'semafor'
-    redisS.rpush(semafor, '1' )
+    if(func == "wordcount"): dades["word_merge"] = "True"
 
-    for i in range(0, len(params)-1):
+    for i in range(0, len(params)):
         dades['parametros'] = params[i]
         redisS.rpush("op", json.dumps(dades))
 
-    dades['parametros'] = params[len(params)-1]
-    dades['end'] = "True"
+    dades["operacio"] = "merge_resultados"
     redisS.rpush("op", json.dumps(dades))
 
     cua = str(request_id) + 'resposta'
     result = redisS.blpop(cua, timeout=0)
-    
-    redisS.delete(str(request_id))
     
     return result[1]
 

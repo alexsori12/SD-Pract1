@@ -1,73 +1,71 @@
 import json
 import re
 import string
+import urllib.request
 
 def start_worker(id, redisS):
-    #FALTA UN DO WHILE INFINITO  
+
     while True:
         task = redisS.blpop('op', timeout=0)
-        #print("     Tasca agafadas")
         tasca = json.loads(task[1])
-        request_id = tasca["request_id"]
-        
-        semafor = str(request_id) + 'semafor'
-        redisS.blpop(semafor, timeout=0)
-
 
         if tasca["operacio"] == "suma":
-            suma(request_id, redisS)
+            suma(tasca, redisS)
         elif tasca["operacio"] == "count":
-            countingWords(request_id, redisS, tasca["parametros"])
+            countingWords(tasca, redisS)
         elif tasca["operacio"] == "wordcount":
-            wordCount(request_id, redisS, tasca["parametros"])
-        else:
-            #ARREGLAR ESTE APARTAT
-            print("operacio no declarada")
-        
-
-        if tasca["end"] == "True":
-            cua = str(request_id) + 'resposta'
-            redisS.rpush(cua, redisS.get(request_id))
-        else:
-            redisS.rpush(semafor, '1')
+            wordCount(tasca, redisS)
+        elif tasca["operacio"] == "merge_resultados":
+            merge(tasca, redisS)
 
 
+def merge(tasca, redisS ):
+    cont = 0
+    if tasca["word_merge"] == "True":
+        result = {}
+        while cont < tasca["numero_param"]:
+            aux = redisS.blpop(tasca["request_id"], timeout=0)
+            nou_dicc = json.loads(aux[1])
+            print(nou_dicc)
+            for word in nou_dicc.keys():
+                if word in result:
+                    nou = int(result[word]) + int(nou_dicc[word])
+                    result[word] = nou
+                else:
+                    result[word] = int(nou_dicc[word])
+            cont += 1    
+        result = str(json.dumps(result))
+    else:
+        result = 0
+        while cont < tasca["numero_param"]:
+            aux = redisS.blpop(tasca["request_id"], timeout=0)
+            result += int(aux[1])
+            cont += 1
+    
+    cua = str(tasca["request_id"]) + 'resposta'
+    redisS.rpush(cua, result)
 
-def llegirFitxer(archiu):
-    #Utilitzar el archiu
-    document_text = open(archiu,"r")
-    text_string = document_text.read().lower()
+def llegirFitxer(arxiu):                     
+ 
+    document_text = urllib.request.urlopen(arxiu).read().decode('utf-8')
+    text_string = document_text.lower()
     return text_string.split()
 
-def suma(request_id, redisS):
-    antic = redisS.get(request_id)
-    if antic == None: 
-        antic = 0
-        
-    nou = int(antic) + 1
-    redisS.set(request_id, str(nou))
+def suma(tasca, redisS):
+    redisS.rpush(tasca["request_id"], 1)
     
-def  countingWords(request_id, redisS, archiu):
+def  countingWords(tasca, redisS):
     
-    antic = redisS.get(request_id)
-    if antic == None: 
-        antic = 0
-    
-    llistaP = llegirFitxer(archiu)
-    cont = len(llistaP)
-    nou = int(antic) + cont
-    redisS.set(request_id, str(nou))
+    llistaP = llegirFitxer(tasca["parametros"])
+    n_palabras = len(llistaP)
+    redisS.rpush(tasca["request_id"], n_palabras)
    
 
-def wordCount(request_id, redisS, archiu):
+def wordCount(tasca, redisS):
 
-    antic = redisS.get(request_id)
-    if antic != None:
-        dicc_general = json.loads(antic)
-    else:
-        dicc_general = {}
+    dicc_general = {}
     
-    llistaP = llegirFitxer(archiu)
+    llistaP = llegirFitxer(tasca["parametros"])
     
     for word in llistaP:
         if word in dicc_general:
@@ -75,7 +73,4 @@ def wordCount(request_id, redisS, archiu):
         else:
             dicc_general[word] = 1
 
-    redisS.set(request_id, str(json.dumps(dicc_general)))
-
-    
-   
+    redisS.rpush(tasca["request_id"], str(json.dumps(dicc_general)))
