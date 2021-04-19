@@ -7,13 +7,13 @@ def start_worker(id, redisS):
     while True:
         #print("     HOLAAAAAAAAA SOC WORKER")
         task= redisS.blpop('op', timeout=0)
-
         #print("     Tasca agafadas")
         tasca  = json.loads(task[1])
         request_id = tasca["request_id"]
         
         semafor =str(request_id) + 'semafor'
         redisS.blpop(semafor, timeout=0)
+
 
         if tasca["operacio"] == "suma":
             suma(request_id,redisS)
@@ -25,43 +25,60 @@ def start_worker(id, redisS):
             #ARREGLAR ESTE APARTAT
             print("operacio no declarada")
         
+
         if tasca["end"] == "True":
-            print("     END TRUE")
             cua =str(request_id) + 'resposta'
-            redisS.rpush(cua,str(int(redisS.get(request_id))))
+            redisS.rpush(cua, redisS.get(request_id))
         else:
             redisS.rpush(semafor,'1')
         
         #print("     Adeeeeeeeeeeeeeeeeeeeeeeeeeeu")
-        
-def suma(request_id, redisS):
-    antic = redisS.get(request_id)
-    print('Valor antic:', antic)
-    nou = int(antic) + 1
-    print('Valor nou:', nou)
-    redisS.set(request_id,str(nou))
-    
-def  countingWords(request_id, redisS, archiu):
-    llistaP = comu(archiu)
 
-    cont = len(llistaP)
-    antic = redisS.get(request_id)
-    nou = int(antic) + cont
-    redisS.set(request_id,str(nou))
 
-def comu(archiu):
+
+def llegirFitxer(archiu):
     #Utilitzar el archiu
     document_text = open("/mnt/c/Users/Victor/Documents/GitHub/SD-Pract1/files/Text2.txt","r")
     text_string = document_text.read().lower()
     return text_string.split()
+
+def suma(request_id, redisS):
+    antic = redisS.get(request_id)
+    if antic == None: 
+        antic = 0
+        
+    nou = int(antic) + 1
+    redisS.set(request_id,str(nou))
+    
+def  countingWords(request_id, redisS, archiu):
+    
+    antic = redisS.get(request_id)
+    if antic == None: 
+        antic = 0
+    
+    llistaP = llegirFitxer(archiu)
+    cont = len(llistaP)
+    nou = int(antic) + cont
+    redisS.set(request_id,str(nou))
    
 
 def wordCount(request_id, redisS, archiu):
-    llistaP = comu(archiu)
-    frecuenciaPalab = []
+
+    antic = redisS.get(request_id)
+    if antic != None:
+        dicc_general = json.loads(antic)
+    else:
+        dicc_general = {}
+    
+    llistaP = llegirFitxer(archiu)
+    
     for word in llistaP:
-        frecuenciaPalab.append(llistaP.count(word))
+        if word in dicc_general:
+            dicc_general[word] += 1
+        else:
+            dicc_general[word] = 1
 
-    #Guarda a REDIS, la pregunta es com?
-    print("Pares\n" + str(list(zip(llistaP, frecuenciaPalab))))
+    redisS.set(request_id,str(json.dumps(dicc_general)))
 
+    
+   

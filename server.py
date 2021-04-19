@@ -39,13 +39,13 @@ def numberOfWorkers():
 def list_workers(): # Falta arreglar
     global WORKERS
     print(type(WORKERS))
-    return "hola"
+    return WORKERS
     
 
 def do_tasks(func, params):
     global REQUEST_ID
     request_id = REQUEST_ID
-    REQUEST_ID+=1
+    REQUEST_ID += 1
 
     dades = {
         "operacio": func,
@@ -53,9 +53,8 @@ def do_tasks(func, params):
         "request_id": request_id,
         'end': "False",
     }
-    
-    redisS.set(str(request_id),'0')
-    semafor =str(request_id) + 'semafor'
+
+    semafor = str(request_id) + 'semafor'
     redisS.rpush(semafor, '1' )
 
     for i in range(0,len(params)-1):
@@ -66,10 +65,12 @@ def do_tasks(func, params):
     dades['end'] = "True"
     redisS.rpush("op", json.dumps(dades))
 
-    cua =str(request_id) + 'resposta'
-    result= (redisS.blpop(cua, timeout=0))
+    cua = str(request_id) + 'resposta'
+    result = redisS.blpop(cua, timeout=0)
+    
     redisS.delete(str(request_id))
-    return int(result[1])
+    
+    return result[1]
 
 
 server.register_function(create_worker, 'crear')

@@ -37,7 +37,7 @@ def count(urls):
 @click.command()
 @click.argument('urls', nargs=-1)
 def wordcount(urls):
-     click.echo("Resultat Count "+ str(server.tasca('wordcount',urls)))
+     click.echo("Resultat WordCount "+ str(server.tasca('wordcount',urls)))
 
 cli.add_command(wordcount)
 cli.add_command(suma)
