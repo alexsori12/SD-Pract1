@@ -13,6 +13,7 @@ server.register_introspection_functions()
 WORKERS={}
 WORKER_ID=0
 REQUEST_ID=0
+
 redisS = Redis()
 
 def create_worker():
@@ -22,24 +23,29 @@ def create_worker():
     proc = Process(target=wk.start_worker, args=(WORKER_ID,redisS))
     proc.start()
 
-    WORKERS[WORKER_ID] = proc
-    # print(str(proc))
+    WORKERS[str(WORKER_ID)] = proc
     WORKER_ID += 1
 
 def delete_worker(id):
     global WORKERS
-    WORKERS[id].terminate()
-    del WORKERS[id]
-    print("Worker Borrado")
+
+    WORKERS[str(id)].terminate()
+    del WORKERS[str(id)]
 
 def numberOfWorkers():
     global WORKERS
+
     return len(WORKERS)
 
-def list_workers(): # Falta arreglar
+def list_workers():
     global WORKERS
-    print(type(WORKERS))
-    return WORKERS
+
+    workers_list = {}
+  
+    for worker in WORKERS.keys():
+        workers_list[worker] = str(WORKERS[worker])
+    
+    return workers_list
     
 
 def do_tasks(func, params):
@@ -57,7 +63,7 @@ def do_tasks(func, params):
     semafor = str(request_id) + 'semafor'
     redisS.rpush(semafor, '1' )
 
-    for i in range(0,len(params)-1):
+    for i in range(0, len(params)-1):
         dades['parametros'] = params[i]
         redisS.rpush("op", json.dumps(dades))
 

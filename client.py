@@ -13,11 +13,14 @@ def create():
 
 @cli.command()
 def number():
-    click.echo("Numero de Workers: "+ str(server.numero())) 
+    click.echo("Numero de Workers: " + str(server.numero())) 
 
 @cli.command()
 def lista():
-    server.lista()
+    lista_workers = server.lista()
+    print("llista:")
+    for key in lista_workers:
+        print ("Worker [" , key, "]:", lista_workers[key])
 
 @click.command()
 @click.argument('id')
@@ -27,17 +30,17 @@ def delete(id):
 @click.command()
 @click.argument('urls', nargs=-1)
 def suma(urls):
-    click.echo("Resultat Suma "+ str(server.tasca('suma',urls))) 
+    click.echo("Resultat Suma " + str(server.tasca('suma',urls))) 
     
 @click.command()
 @click.argument('urls', nargs=-1)
 def count(urls):
-     click.echo("Resultat Count "+ str(server.tasca('count',urls)))
+     click.echo("Resultat Count " + str(server.tasca('count',urls)))
 
 @click.command()
 @click.argument('urls', nargs=-1)
 def wordcount(urls):
-     click.echo("Resultat WordCount "+ str(server.tasca('wordcount',urls)))
+     click.echo("Resultat WordCount " + str(server.tasca('wordcount',urls)))
 
 cli.add_command(wordcount)
 cli.add_command(suma)

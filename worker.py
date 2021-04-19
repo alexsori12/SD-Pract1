@@ -5,40 +5,37 @@ import string
 def start_worker(id, redisS):
     #FALTA UN DO WHILE INFINITO  
     while True:
-        #print("     HOLAAAAAAAAA SOC WORKER")
-        task= redisS.blpop('op', timeout=0)
+        task = redisS.blpop('op', timeout=0)
         #print("     Tasca agafadas")
-        tasca  = json.loads(task[1])
+        tasca = json.loads(task[1])
         request_id = tasca["request_id"]
         
-        semafor =str(request_id) + 'semafor'
+        semafor = str(request_id) + 'semafor'
         redisS.blpop(semafor, timeout=0)
 
 
         if tasca["operacio"] == "suma":
-            suma(request_id,redisS)
+            suma(request_id, redisS)
         elif tasca["operacio"] == "count":
-            countingWords(request_id,redisS,tasca["parametros"])
+            countingWords(request_id, redisS, tasca["parametros"])
         elif tasca["operacio"] == "wordcount":
-            wordCount(request_id,redisS,tasca["parametros"])
+            wordCount(request_id, redisS, tasca["parametros"])
         else:
             #ARREGLAR ESTE APARTAT
             print("operacio no declarada")
         
 
         if tasca["end"] == "True":
-            cua =str(request_id) + 'resposta'
+            cua = str(request_id) + 'resposta'
             redisS.rpush(cua, redisS.get(request_id))
         else:
-            redisS.rpush(semafor,'1')
-        
-        #print("     Adeeeeeeeeeeeeeeeeeeeeeeeeeeu")
+            redisS.rpush(semafor, '1')
 
 
 
 def llegirFitxer(archiu):
     #Utilitzar el archiu
-    document_text = open("/mnt/c/Users/Victor/Documents/GitHub/SD-Pract1/files/Text2.txt","r")
+    document_text = open(archiu,"r")
     text_string = document_text.read().lower()
     return text_string.split()
 
@@ -48,7 +45,7 @@ def suma(request_id, redisS):
         antic = 0
         
     nou = int(antic) + 1
-    redisS.set(request_id,str(nou))
+    redisS.set(request_id, str(nou))
     
 def  countingWords(request_id, redisS, archiu):
     
@@ -59,7 +56,7 @@ def  countingWords(request_id, redisS, archiu):
     llistaP = llegirFitxer(archiu)
     cont = len(llistaP)
     nou = int(antic) + cont
-    redisS.set(request_id,str(nou))
+    redisS.set(request_id, str(nou))
    
 
 def wordCount(request_id, redisS, archiu):
@@ -78,7 +75,7 @@ def wordCount(request_id, redisS, archiu):
         else:
             dicc_general[word] = 1
 
-    redisS.set(request_id,str(json.dumps(dicc_general)))
+    redisS.set(request_id, str(json.dumps(dicc_general)))
 
     
    
