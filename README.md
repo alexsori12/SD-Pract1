@@ -61,3 +61,18 @@ llegirFitxer() -> obra un fitxer i retorna el text d'una web
 suma() -> suma 1 a la cua
 countingWords() -> conta les paraules d'un fitxer
 wordCount() -> crea un diccionari amb els cops que apareix cada paraula
+
+
+
+PER EXECUTAR
+
+Primer iniciem el servidor de redis fent un redis-server, fem un flushall per tal de borrar contingut de la BD, llavors obrim el servidor amb un (python3 ./server.py), i ja podem iniciar el client.
+
+Si fem un (python3 ./client.py "opció" ) sense opció ens sortiran una llista de totes les opcions que pot fer el client. (Hem de executar el client.py per cada opcio que es vulgui executar)
+
+Per realitzar les funcions de count i wordcount, hem de fer un servidor http on estiguen els fitxers:
+cd /directori/fitxers
+python3 -m http.server
+
+I ja podrem executar 
+python3 ./client.py count http://localhost:8000/Text1.txt http://localhost:8000/Text2.txt 
