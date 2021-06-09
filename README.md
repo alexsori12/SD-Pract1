@@ -1,5 +1,3 @@
-Link GITHUB: https://github.com/alexsori12/SD-Pract1.git
-
 CLIENT
 
 Llibreries:
